@@ -1,4 +1,5 @@
-import 'package:calculadora_imc/models/imc.dart';
+import 'package:calculadora_imc/models/imc_hive.dart';
+import 'package:calculadora_imc/repositories/imc_repository_hive.dart';
 import 'package:flutter/material.dart';
 
 class CalculadoraPage extends StatefulWidget {
@@ -11,12 +12,24 @@ class CalculadoraPage extends StatefulWidget {
 }
 
 class _CalculadoraPageState extends State<CalculadoraPage> {
-  var instanciaIMC = IMC(0, 0);
+  late ImcRepositoryHive instanciaHive;
 
   TextEditingController controllerPeso = TextEditingController();
   TextEditingController controllerAltura = TextEditingController();
 
-  var listasIMC = [];
+  var listasIMC = const <ImcHive>[];
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    obterIMCs();
+  }
+
+  void obterIMCs() async {
+    instanciaHive = await ImcRepositoryHive.load();
+    listasIMC = instanciaHive.obterDados();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,29 +47,108 @@ class _CalculadoraPageState extends State<CalculadoraPage> {
                     itemCount: listasIMC.length,
                     itemBuilder: (BuildContext bc, int index) {
                       var imcItem = listasIMC[index];
-                      print(imcItem[2]);
+                      print(imcItem.imc);
                       return Dismissible(
                         key: GlobalKey(),
-                        onDismissed: (direction) => {listasIMC.removeAt(index)},
+                        onDismissed: (direction) => {
+                          listasIMC.removeAt(index),
+                          instanciaHive.deletar(imcItem),
+                        },
                         child: ListTile(
+                          onTap: () {
+                            controllerPeso.text = imcItem.peso.toString();
+                            controllerAltura.text = imcItem.altura.toString();
+                            showDialog(
+                                context: context,
+                                builder: (_) {
+                                  return AlertDialog(
+                                    title: const Text(
+                                        "Alterando os dados para o IMC:"),
+                                    content: Wrap(children: [
+                                      Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              "Peso (em quilos)",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            TextField(
+                                              controller: controllerPeso,
+                                            ),
+                                            const SizedBox(
+                                              height: 20,
+                                            ),
+                                            const Text(
+                                              "Altura (em metros)",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                            TextField(
+                                              controller: controllerAltura,
+                                            ),
+                                          ]),
+                                    ]),
+                                    actions: [
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text("Cancelar")),
+                                          TextButton(
+                                              onPressed: () {
+                                                try {
+                                                  imcItem.altura = double.parse(
+                                                      controllerAltura.text);
+                                                  imcItem.peso = double.parse(
+                                                      controllerPeso.text);
+                                                  instanciaHive
+                                                      .alterar(imcItem);
+                                                } catch (e) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(const SnackBar(
+                                                          content: Text(
+                                                              "Insira valores válidos.")));
+                                                  return;
+                                                }
+
+                                                obterIMCs();
+                                                setState(() {});
+
+                                                Navigator.pop(context);
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(const SnackBar(
+                                                        content: Text(
+                                                            "IMC calculado com sucesso")));
+                                              },
+                                              child:
+                                                  const Text("Calcular IMC")),
+                                        ],
+                                      ),
+                                    ],
+                                  );
+                                });
+                          },
                           title: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text("IMC: ${imcItem[2]}"),
+                              Text("IMC: ${imcItem.imc.toStringAsFixed(2)}"),
                             ],
                           ),
                           leading: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text("Peso: ${imcItem[0].toString()}"),
-                                Text("Altura: ${imcItem[1].toString()}")
+                                Text("Peso: ${imcItem.peso.toString()}"),
+                                Text("Altura: ${imcItem.altura.toString()}")
                               ]),
-                          // Column(children: [
-                          //   Text("Altura"),
-                          //   Text(imcItem[1].toString()),
-                          // ]),
-
-                          trailing: Text(imcItem[3].toString()),
+                          trailing: Text(imcItem.condicao.toString()),
                         ),
                       );
                     }),
@@ -109,10 +201,9 @@ class _CalculadoraPageState extends State<CalculadoraPage> {
                           TextButton(
                               onPressed: () {
                                 try {
-                                  instanciaIMC.altura =
-                                      double.parse(controllerAltura.text);
-                                  instanciaIMC.peso =
-                                      double.parse(controllerPeso.text);
+                                  instanciaHive.salvar(ImcHive.criar(
+                                      double.parse(controllerPeso.text),
+                                      double.parse(controllerAltura.text)));
                                 } catch (e) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
@@ -120,9 +211,9 @@ class _CalculadoraPageState extends State<CalculadoraPage> {
                                               Text("Insira valores válidos.")));
                                   return;
                                 }
-                                setState(() {
-                                  listasIMC.add(instanciaIMC.cadastrarIMC());
-                                });
+
+                                obterIMCs();
+                                setState(() {});
 
                                 Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
