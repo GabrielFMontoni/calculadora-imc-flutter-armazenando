@@ -1,16 +1,28 @@
-# calculadora_imc
 
-A new Flutter project.
+<div style="display: flex;" align="center"><br>
+<h1>Calculadora IMC em Flutter</h1>
+Desafiado pelo Bootcamp Santander da DIO de Mobile com Flutter, criei a calculadora IMC utilizando o framework Flutter, e armazenando localmente no banco de dados Hive.
+Neste Desafio você irá criar uma calculadora simples para calcular o IMC (Índice de Massa Corporal) de uma pessoa utilizando a linguagem Dart e o Flutter.
+  <br>
+</div>
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
+##  :hammer: Funcionalidades do projeto
+Através de um botão flutuante, insere-se um Peso e uma Altura. O IMC é calculado e é mostrado na tela os IMC's calculados em formato de lista.
+Pode remover os cálculos de IMC passando para o lado ou também alterar clicando em cima.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Contém também tratamento de exceções para caso de digitar letras nos lugares de números.<br>
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## :file_folder: Acesso ao projeto
+Baixe localmente e rode a aplicação em um emulador ou web (Foi construído para celulares, especialmente).
+
+
+## Tecnologia Utilizada
+<div style="display: inline_block" align="center"><br>
+  <center>
+  <img align="center" alt="Dart" height="100" width="100" src="https://github.com/GabrielFMontoni/calculadora-imc-java/assets/121250213/144613af-e940-407e-95ee-fd92b18ec6cb">
+    
+  </center>
+
+</div>
